@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package movie;
+
+option go_package="github.com/qjatjr29/go-grpc-movieapp/proto/movie";
+
+import "google/api/annotations.proto";
+
+service Movie {
+    rpc GetMovie(GetMovieRequest) returns (GetMovieResponse){
+        option (google.api.http)={
+            get: "/movie/{movie_id}"
+        };
+    }
+    rpc ListPopularMovies(ListPopularMovieRequest) returns (ListPopularMovieResponse){
+        option (google.api.http)={
+            get :"/movie/popular"
+        };
+    }
+}
+
+message MovieMessage{
+    int32 movie_id=1;
+    string title=2;
+    string poster_path=3;
+    string release_date=4;
+}
+
+
+message PopularMovieMessage{
+    int32 id=1;
+    string title=2;
+    string poster_path=3;
+    string release_date=4;
+    string overview=5;
+}
+
+message GetMovieRequest{
+    string movie_id=1;
+}
+
+message GetMovieResponse{
+    MovieMessage popularmovie_message=1;
+}
+
+message ListPopularMovieRequest{}
+
+message ListPopularMovieResponse{
+    repeated PopularMovieMessage popularmovie_message=1;
+}
+
+
