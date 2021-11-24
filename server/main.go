@@ -13,8 +13,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// "github.com/qjatjr29/go-grpc-movieapp/data"
-
 const portNumber = "9001"
 
 type movieServer struct {
@@ -22,18 +20,18 @@ type movieServer struct {
 }
 
 // 인기 영화 목록
-
 type PopularMovies struct {
 	Results []struct {
-		ID           int    `json:"id"`
-		Title        string `json:"title"`
-		Release_date string `json:"release_date"`
-		Poster_path  string `json:"poster_path"`
-		Overview     string `json:"overview"`
+		ID           int     `json:"id"`
+		Title        string  `json:"title"`
+		Release_date string  `json:"release_date"`
+		Poster_path  string  `json:"poster_path"`
+		Overview     string  `json:"overview"`
+		Vote_average float32 `json:"vote_average`
 	} `json:"results`
 }
 
-// GetUser returns user message by user_id
+// Get Movie Detail
 func (s *movieServer) GetMovie(ctx context.Context, req *moviepb.GetMovieRequest) (*moviepb.GetMovieResponse, error) {
 	// userID := req.UserId
 
@@ -65,7 +63,7 @@ func getJson(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-// ListUsers returns all user messages
+// List Popular Movies
 func (s *movieServer) ListPopularMovies(ctx context.Context, req *moviepb.ListPopularMovieRequest) (*moviepb.ListPopularMovieResponse, error) {
 
 	resp, err := http.Get("https://api.themoviedb.org/3/movie/popular?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&page=1")
@@ -79,37 +77,53 @@ func (s *movieServer) ListPopularMovies(ctx context.Context, req *moviepb.ListPo
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
+	popularMovieMessages := make([]*moviepb.MoviesMessage, len(result.Results))
 
-	popularMovieMessage := make([]*moviepb.PopularMovieMessage, 0)
-
-	// var popularMovie *moviepb.PopularMovieMessage
-	var popularMovie = &moviepb.PopularMovieMessage{
-		Id:          1,
-		Title:       "",
-		PosterPath:  "",
-		ReleaseDate: "",
-		Overview:    "",
-	}
-	for _, rec := range result.Results {
+	for i, rec := range result.Results {
+		var popularMovie = &moviepb.MoviesMessage{}
 		popularMovie.Id = int32(rec.ID)
 		popularMovie.Title = rec.Title
 		popularMovie.PosterPath = rec.Poster_path
 		popularMovie.ReleaseDate = rec.Release_date
 		popularMovie.Overview = rec.Overview
-		// fmt.Println(rec.ID)
-		// _popularmoive := *moviepb.PopularMovieMessage{
-		// 	MovieId:     int32(rec.ID),
-		// 	Title:       rec.Title,
-		// 	PosterPath:  rec.Poster_path,
-		// 	Overview:    rec.Overview,
-		// 	ReleaseDate: rec.Release_date,
-		// }
-		fmt.Println(rec.Title)
-		popularMovieMessage = append(popularMovieMessage, popularMovie)
+		popularMovie.VoteAverage = rec.Vote_average
+		popularMovieMessages[i] = popularMovie
 	}
+	fmt.Println(popularMovieMessages[2])
 
 	return &moviepb.ListPopularMovieResponse{
-		PopularmovieMessage: popularMovieMessage,
+		PopularmovieMessage: popularMovieMessages,
+	}, nil
+}
+
+// List Search Result Movies
+func (s *movieServer) ListSearchMovies(ctx context.Context, req *moviepb.ListSearchMovieRequest) (*moviepb.ListSearchMovieResponse, error) {
+	movieID := req.MovieId
+	resp, err := http.Get(`https://api.themoviedb.org/3/search/movie?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&query=&{movieID}&page=1&include_adult=false`)
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+
+	var result PopularMovies
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	SearchMovieMessages := make([]*moviepb.MoviesMessage, len(result.Results))
+
+	for i, rec := range result.Results {
+		var popularMovie = &moviepb.MoviesMessage{}
+		popularMovie.Id = int32(rec.ID)
+		popularMovie.Title = rec.Title
+		popularMovie.PosterPath = rec.Poster_path
+		popularMovie.ReleaseDate = rec.Release_date
+		popularMovie.Overview = rec.Overview
+		popularMovie.VoteAverage = rec.Vote_average
+		SearchMovieMessages[i] = popularMovie
+	}
+	return &moviepb.ListSearchMovieResponse{
+		SearchmovieMessage: SearchMovieMessages,
 	}, nil
 }
 

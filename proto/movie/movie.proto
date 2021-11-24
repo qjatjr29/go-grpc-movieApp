@@ -17,6 +17,11 @@ service Movie {
             get :"/movie/popular"
         };
     }
+    rpc ListSearchMovies(ListSearchMovieRequest) returns (ListSearchMovieResponse){
+        option (google.api.http)={
+            get :"/movie/search/{movie_id}"
+        };
+    }
 }
 
 message MovieMessage{
@@ -27,13 +32,15 @@ message MovieMessage{
 }
 
 
-message PopularMovieMessage{
+message MoviesMessage{
     int32 id=1;
     string title=2;
     string poster_path=3;
     string release_date=4;
     string overview=5;
+    float vote_average=6;
 }
+
 
 message GetMovieRequest{
     string movie_id=1;
@@ -46,7 +53,15 @@ message GetMovieResponse{
 message ListPopularMovieRequest{}
 
 message ListPopularMovieResponse{
-    repeated PopularMovieMessage popularmovie_message=1;
+    repeated MoviesMessage popularmovie_message=1;
+}
+
+message ListSearchMovieRequest{
+    string movie_id=1;
+}
+
+message ListSearchMovieResponse{
+    repeated MoviesMessage searchmovie_message=1;
 }
 
 
