@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type MovieClient interface {
 	GetMovie(ctx context.Context, in *GetMovieRequest, opts ...grpc.CallOption) (*GetMovieResponse, error)
 	ListPopularMovies(ctx context.Context, in *ListPopularMovieRequest, opts ...grpc.CallOption) (*ListPopularMovieResponse, error)
-	ListSearchMovies(ctx context.Context, in *ListSearchMovieRequest, opts ...grpc.CallOption) (*ListSearchMovieResponse, error)
+	SearchMovies(ctx context.Context, in *ListSearchMovieRequest, opts ...grpc.CallOption) (*ListSearchMovieResponse, error)
 }
 
 type movieClient struct {
@@ -49,9 +49,9 @@ func (c *movieClient) ListPopularMovies(ctx context.Context, in *ListPopularMovi
 	return out, nil
 }
 
-func (c *movieClient) ListSearchMovies(ctx context.Context, in *ListSearchMovieRequest, opts ...grpc.CallOption) (*ListSearchMovieResponse, error) {
+func (c *movieClient) SearchMovies(ctx context.Context, in *ListSearchMovieRequest, opts ...grpc.CallOption) (*ListSearchMovieResponse, error) {
 	out := new(ListSearchMovieResponse)
-	err := c.cc.Invoke(ctx, "/movie.Movie/ListSearchMovies", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/movie.Movie/SearchMovies", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (c *movieClient) ListSearchMovies(ctx context.Context, in *ListSearchMovieR
 type MovieServer interface {
 	GetMovie(context.Context, *GetMovieRequest) (*GetMovieResponse, error)
 	ListPopularMovies(context.Context, *ListPopularMovieRequest) (*ListPopularMovieResponse, error)
-	ListSearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error)
+	SearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error)
 	mustEmbedUnimplementedMovieServer()
 }
 
@@ -78,8 +78,8 @@ func (UnimplementedMovieServer) GetMovie(context.Context, *GetMovieRequest) (*Ge
 func (UnimplementedMovieServer) ListPopularMovies(context.Context, *ListPopularMovieRequest) (*ListPopularMovieResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPopularMovies not implemented")
 }
-func (UnimplementedMovieServer) ListSearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListSearchMovies not implemented")
+func (UnimplementedMovieServer) SearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchMovies not implemented")
 }
 func (UnimplementedMovieServer) mustEmbedUnimplementedMovieServer() {}
 
@@ -130,20 +130,20 @@ func _Movie_ListPopularMovies_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Movie_ListSearchMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Movie_SearchMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListSearchMovieRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MovieServer).ListSearchMovies(ctx, in)
+		return srv.(MovieServer).SearchMovies(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/movie.Movie/ListSearchMovies",
+		FullMethod: "/movie.Movie/SearchMovies",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MovieServer).ListSearchMovies(ctx, req.(*ListSearchMovieRequest))
+		return srv.(MovieServer).SearchMovies(ctx, req.(*ListSearchMovieRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -164,8 +164,8 @@ var Movie_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Movie_ListPopularMovies_Handler,
 		},
 		{
-			MethodName: "ListSearchMovies",
-			Handler:    _Movie_ListSearchMovies_Handler,
+			MethodName: "SearchMovies",
+			Handler:    _Movie_SearchMovies_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

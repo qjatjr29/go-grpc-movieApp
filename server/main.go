@@ -30,6 +30,15 @@ type PopularMovies struct {
 		Vote_average float32 `json:"vote_average`
 	} `json:"results`
 }
+type SearchMovies struct {
+	Results []struct {
+		ID           int     `json:"id"`
+		Title        string  `json:"title"`
+		Release_date string  `json:"release_date"`
+		Poster_path  string  `json:"poster_path"`
+		Vote_average float32 `json:"vote_average`
+	} `json:"results`
+}
 
 // Get Movie Detail
 func (s *movieServer) GetMovie(ctx context.Context, req *moviepb.GetMovieRequest) (*moviepb.GetMovieResponse, error) {
@@ -77,10 +86,10 @@ func (s *movieServer) ListPopularMovies(ctx context.Context, req *moviepb.ListPo
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	popularMovieMessages := make([]*moviepb.MoviesMessage, len(result.Results))
+	popularMovieMessages := make([]*moviepb.PopularMoviesMessage, len(result.Results))
 
 	for i, rec := range result.Results {
-		var popularMovie = &moviepb.MoviesMessage{}
+		var popularMovie = &moviepb.PopularMoviesMessage{}
 		popularMovie.Id = int32(rec.ID)
 		popularMovie.Title = rec.Title
 		popularMovie.PosterPath = rec.Poster_path
@@ -89,38 +98,41 @@ func (s *movieServer) ListPopularMovies(ctx context.Context, req *moviepb.ListPo
 		popularMovie.VoteAverage = rec.Vote_average
 		popularMovieMessages[i] = popularMovie
 	}
-	fmt.Println(popularMovieMessages[2])
-
 	return &moviepb.ListPopularMovieResponse{
 		PopularmovieMessage: popularMovieMessages,
 	}, nil
 }
 
 // List Search Result Movies
-func (s *movieServer) ListSearchMovies(ctx context.Context, req *moviepb.ListSearchMovieRequest) (*moviepb.ListSearchMovieResponse, error) {
-	movieID := req.MovieId
-	resp, err := http.Get(`https://api.themoviedb.org/3/search/movie?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&query=&{movieID}&page=1&include_adult=false`)
+func (s *movieServer) SearchMovies(ctx context.Context, req *moviepb.ListSearchMovieRequest) (*moviepb.ListSearchMovieResponse, error) {
+	fmt.Println("check")
+	movieID := req.SearchMovieId
+	fmt.Println(movieID)
+	url := "https://api.themoviedb.org/3/search/movie?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&query="
+	url += movieID
+	url += "&page=1&include_adult=false"
+	fmt.Println(url)
+	resp, err := http.Get("https://api.themoviedb.org/3/search/movie?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&query=" + movieID + "&page=1&include_adult=false")
 	if err != nil {
 		fmt.Println("No response from request")
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
 
-	var result PopularMovies
+	var result SearchMovies
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	SearchMovieMessages := make([]*moviepb.MoviesMessage, len(result.Results))
+	SearchMovieMessages := make([]*moviepb.SearchMoviesMessage, len(result.Results))
 
 	for i, rec := range result.Results {
-		var popularMovie = &moviepb.MoviesMessage{}
-		popularMovie.Id = int32(rec.ID)
-		popularMovie.Title = rec.Title
-		popularMovie.PosterPath = rec.Poster_path
-		popularMovie.ReleaseDate = rec.Release_date
-		popularMovie.Overview = rec.Overview
-		popularMovie.VoteAverage = rec.Vote_average
-		SearchMovieMessages[i] = popularMovie
+		var searchMovie = &moviepb.SearchMoviesMessage{}
+		searchMovie.Id = int32(rec.ID)
+		searchMovie.Title = rec.Title
+		searchMovie.PosterPath = rec.Poster_path
+		searchMovie.ReleaseDate = rec.Release_date
+		searchMovie.VoteAverage = rec.Vote_average
+		SearchMovieMessages[i] = searchMovie
 	}
 	return &moviepb.ListSearchMovieResponse{
 		SearchmovieMessage: SearchMovieMessages,
