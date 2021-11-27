@@ -30,6 +30,7 @@ type PopularMovies struct {
 		Vote_average float32 `json:"vote_average`
 	} `json:"results`
 }
+// 검색한 영화 목록
 type SearchMovies struct {
 	Results []struct {
 		ID           int     `json:"id"`
@@ -39,27 +40,107 @@ type SearchMovies struct {
 		Vote_average float32 `json:"vote_average`
 	} `json:"results`
 }
+// 영화 detail 
+type DetailMovies struct {
+	ID           int     `json:"id"`
+	Title        string  `json:"title"`
+	Release_date string  `json:"release_date"`
+	Poster_path  string  `json:"poster_path"`
+	Overview string `json:"overview"`
+	Homepage string `json:"homepage"`
+	Genres []struct {
+		ID int `json:"id"`
+		Name string `json="name"`
+	}
+	Backdrop_path string `json:"backdrop_path"`
+	Runtime int32 `json:"runtime"`
+	Imdb_id string `json:"imdb_id"`
+	Production []struct{
+		ID int `json:"id"`
+		Logo_path string `json:"logo_path"`
+		Name string `json:"name"`
+	} `json:"production_companies"`
+}
+// 배우, 스태프 
+
+type Cast struct {
+	CastList []struct {
+		ID int32 `json: "id"`
+		Name string `json:"name"`
+		Profile_path string `json:"profile_path"`
+		Character string `json:"character"`
+	} `json:"cast"`
+}
+type Crew struct {
+	CrewList []struct {
+		ID int32 `json:"id"`
+		Name string `json:"name"`
+		Profile_path string `json:"profile_path"`
+		Job string `json:"job"`
+	}`json:"crew"`
+}
+
+type Video struct{
+	Results []struct {
+		Key string `json:"key"`
+		Name string `json:"name"`
+	}
+}
+
 
 // Get Movie Detail
 func (s *movieServer) GetMovie(ctx context.Context, req *moviepb.GetMovieRequest) (*moviepb.GetMovieResponse, error) {
-	// userID := req.UserId
+	
+	movieID := req.MovieId
+	fmt.Println(movieID)
+	url := "https://api.themoviedb.org/3/movie/"
+	url += movieID
+	url += "?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US"
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
 
-	var movieMessage *moviepb.MovieMessage
-	movieMessage.MovieId = 1
-	movieMessage.PosterPath = "1"
-	movieMessage.ReleaseDate = "1"
-	movieMessage.Title = "1"
+	var result DetailMovies
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	// MovieMessages := make([]*moviepb.MovieMessage, len(result.Results))
 
-	// for _, u := range data.UsersV2 {
-	// 	if u.UserId != userID {
-	// 		continue
-	// 	}
-	// 	movieMessage = u
-	// 	break
-	// }
+	
+	var MovieDetail = &moviepb.MovieMessage{}
+	MovieDetail.Id = int32(result.ID)
+	MovieDetail.Title = result.Title
+	MovieDetail.PosterPath = result.Poster_path
+	MovieDetail.ReleaseDate = result.Release_date
+	MovieDetail.BackdropPath = result.Backdrop_path
+	MovieDetail.ImdbId = result.Imdb_id
+	MovieDetail.Runtime = result.Runtime
 
+	genresList := make([]*moviepb.Genres,len(result.Genres))
+	for i,rec := range result.Genres{
+		var genre = &moviepb.Genres{}
+		genre.Id = int32(rec.ID)
+		genre.Name = rec.Name
+		genresList[i]=genre
+	}
+	productionList := make([]*moviepb.Production,len(result.Production))
+	for i,rec := range result.Production{
+		var production = &moviepb.Production{}
+		production.Id = int32(rec.ID)
+		production.Name = rec.Name
+		production.LogoPath=rec.Logo_path
+		productionList[i]=production
+	}
+	MovieDetail.Genres=genresList
+	MovieDetail.Production=productionList
+	MovieDetail.Homepage=result.Homepage
+	MovieDetail.Overview=result.Overview
+	
 	return &moviepb.GetMovieResponse{
-		// MovieMessage: movieMessage,
+		MovieMessage: MovieDetail,
 	}, nil
 }
 
@@ -138,6 +219,112 @@ func (s *movieServer) SearchMovies(ctx context.Context, req *moviepb.ListSearchM
 		SearchmovieMessage: SearchMovieMessages,
 	}, nil
 }
+
+// List Actors in Movies
+func (s *movieServer) CastMovies(ctx context.Context, req *moviepb.CastMovieRequest) (*moviepb.CastMovieResponse, error) {
+	fmt.Println("check")
+	movieID := req.MovieId
+	fmt.Println(movieID)
+	url := "https://api.themoviedb.org/3/movie/"
+	url += movieID
+	url += "/credits?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US"
+	fmt.Println(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+
+	var result Cast
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	CastMovieMessages := make([]*moviepb.CastMovieMessage, len(result.CastList))
+	for i, rec := range result.CastList {
+		var castActor = &moviepb.CastMovieMessage{}
+		castActor.Id = int32(rec.ID)
+		castActor.Name = rec.Name
+		castActor.ProfilePath = rec.Profile_path
+		castActor.Character = rec.Character
+		CastMovieMessages[i] = castActor
+	}
+	return &moviepb.CastMovieResponse{
+		CastmovieMessage: CastMovieMessages,
+	}, nil
+}
+
+// List staff in Movies
+func (s *movieServer) CrewMovies(ctx context.Context, req *moviepb.CrewMovieRequest) (*moviepb.CrewMovieResponse, error) {
+	fmt.Println("check")
+	movieID := req.MovieId
+	fmt.Println(movieID)
+	url := "https://api.themoviedb.org/3/movie/"
+	url += movieID
+	url += "/credits?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US"
+	fmt.Println(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+
+	var result Crew
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	CrewMovieMessages := make([]*moviepb.CrewMovieMessage, len(result.CrewList))
+
+	for i, rec := range result.CrewList {
+		fmt.Println(rec)
+		var crew = &moviepb.CrewMovieMessage{}
+		crew.Id = int32(rec.ID)
+		crew.Name = rec.Name
+		crew.ProfilePath=rec.Profile_path
+		crew.Job = rec.Job
+		CrewMovieMessages[i] = crew
+	}
+	return &moviepb.CrewMovieResponse{
+		CrewmovieMessage: CrewMovieMessages,
+	}, nil
+}
+
+// List video 
+func (s *movieServer) VideoMovies(ctx context.Context, req *moviepb.VideoMovieRequest) (*moviepb.VideoMovieResponse, error) {
+	movieID := req.MovieId
+	fmt.Println(movieID)
+	url := "https://api.themoviedb.org/3/movie/"
+	url += movieID
+	url += "/videos?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+
+	var result Video
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	VideoMessages := make([]*moviepb.VideosMessage, len(result.Results))
+
+	for i, rec := range result.Results {
+		// fmt.Println(rec)
+		var video = &moviepb.VideosMessage{}
+		video.Key = rec.Key
+		video.Name = rec.Name
+		
+		VideoMessages[i] = video
+	}
+	return &moviepb.VideoMovieResponse{
+		VideoMessage: VideoMessages,
+	}, nil
+}
+
+
 
 func main() {
 	lis, err := net.Listen("tcp", ":"+portNumber)

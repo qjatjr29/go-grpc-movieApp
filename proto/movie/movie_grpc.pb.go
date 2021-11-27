@@ -21,6 +21,9 @@ type MovieClient interface {
 	GetMovie(ctx context.Context, in *GetMovieRequest, opts ...grpc.CallOption) (*GetMovieResponse, error)
 	ListPopularMovies(ctx context.Context, in *ListPopularMovieRequest, opts ...grpc.CallOption) (*ListPopularMovieResponse, error)
 	SearchMovies(ctx context.Context, in *ListSearchMovieRequest, opts ...grpc.CallOption) (*ListSearchMovieResponse, error)
+	CastMovies(ctx context.Context, in *CastMovieRequest, opts ...grpc.CallOption) (*CastMovieResponse, error)
+	CrewMovies(ctx context.Context, in *CrewMovieRequest, opts ...grpc.CallOption) (*CrewMovieResponse, error)
+	VideoMovies(ctx context.Context, in *VideoMovieRequest, opts ...grpc.CallOption) (*VideoMovieResponse, error)
 }
 
 type movieClient struct {
@@ -58,6 +61,33 @@ func (c *movieClient) SearchMovies(ctx context.Context, in *ListSearchMovieReque
 	return out, nil
 }
 
+func (c *movieClient) CastMovies(ctx context.Context, in *CastMovieRequest, opts ...grpc.CallOption) (*CastMovieResponse, error) {
+	out := new(CastMovieResponse)
+	err := c.cc.Invoke(ctx, "/movie.Movie/CastMovies", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieClient) CrewMovies(ctx context.Context, in *CrewMovieRequest, opts ...grpc.CallOption) (*CrewMovieResponse, error) {
+	out := new(CrewMovieResponse)
+	err := c.cc.Invoke(ctx, "/movie.Movie/CrewMovies", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieClient) VideoMovies(ctx context.Context, in *VideoMovieRequest, opts ...grpc.CallOption) (*VideoMovieResponse, error) {
+	out := new(VideoMovieResponse)
+	err := c.cc.Invoke(ctx, "/movie.Movie/VideoMovies", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MovieServer is the server API for Movie service.
 // All implementations must embed UnimplementedMovieServer
 // for forward compatibility
@@ -65,6 +95,9 @@ type MovieServer interface {
 	GetMovie(context.Context, *GetMovieRequest) (*GetMovieResponse, error)
 	ListPopularMovies(context.Context, *ListPopularMovieRequest) (*ListPopularMovieResponse, error)
 	SearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error)
+	CastMovies(context.Context, *CastMovieRequest) (*CastMovieResponse, error)
+	CrewMovies(context.Context, *CrewMovieRequest) (*CrewMovieResponse, error)
+	VideoMovies(context.Context, *VideoMovieRequest) (*VideoMovieResponse, error)
 	mustEmbedUnimplementedMovieServer()
 }
 
@@ -80,6 +113,15 @@ func (UnimplementedMovieServer) ListPopularMovies(context.Context, *ListPopularM
 }
 func (UnimplementedMovieServer) SearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchMovies not implemented")
+}
+func (UnimplementedMovieServer) CastMovies(context.Context, *CastMovieRequest) (*CastMovieResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CastMovies not implemented")
+}
+func (UnimplementedMovieServer) CrewMovies(context.Context, *CrewMovieRequest) (*CrewMovieResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CrewMovies not implemented")
+}
+func (UnimplementedMovieServer) VideoMovies(context.Context, *VideoMovieRequest) (*VideoMovieResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VideoMovies not implemented")
 }
 func (UnimplementedMovieServer) mustEmbedUnimplementedMovieServer() {}
 
@@ -148,6 +190,60 @@ func _Movie_SearchMovies_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Movie_CastMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CastMovieRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServer).CastMovies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.Movie/CastMovies",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServer).CastMovies(ctx, req.(*CastMovieRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Movie_CrewMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CrewMovieRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServer).CrewMovies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.Movie/CrewMovies",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServer).CrewMovies(ctx, req.(*CrewMovieRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Movie_VideoMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VideoMovieRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServer).VideoMovies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.Movie/VideoMovies",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServer).VideoMovies(ctx, req.(*VideoMovieRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Movie_ServiceDesc is the grpc.ServiceDesc for Movie service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,6 +262,18 @@ var Movie_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchMovies",
 			Handler:    _Movie_SearchMovies_Handler,
+		},
+		{
+			MethodName: "CastMovies",
+			Handler:    _Movie_CastMovies_Handler,
+		},
+		{
+			MethodName: "CrewMovies",
+			Handler:    _Movie_CrewMovies_Handler,
+		},
+		{
+			MethodName: "VideoMovies",
+			Handler:    _Movie_VideoMovies_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

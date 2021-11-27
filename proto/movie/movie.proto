@@ -22,13 +22,44 @@ service Movie {
             get :"/movie/search/{search_movie_id}"
         };
     }
+    rpc CastMovies(CastMovieRequest) returns (CastMovieResponse){
+        option (google.api.http)={
+            get :"/movie/cast/{movie_id}"
+        };
+    }
+    rpc CrewMovies(CrewMovieRequest) returns (CrewMovieResponse){
+        option (google.api.http)={
+            get :"/movie/crew/{movie_id}"
+        };
+    }
+    rpc VideoMovies(VideoMovieRequest) returns (VideoMovieResponse){
+        option (google.api.http)={
+            get :"/movie/video/{movie_id}"
+        };
+    }
+}
+message Genres{
+    int32 id=1;
+    string name=2;
+}
+message Production{
+    int32 id=1;
+    string logo_path=2;
+    string name=3;
 }
 
 message MovieMessage{
-    int32 movie_id=1;
+    int32 id=1;
     string title=2;
     string poster_path=3;
     string release_date=4;
+    repeated Genres genres=5;
+    string homepage=6;
+    string overview=7;
+    string backdrop_path=8;
+    int32 runtime=9;
+    string imdb_id=10;
+    repeated Production production=11;
 }
 
 message PopularMoviesMessage{
@@ -47,12 +78,32 @@ message SearchMoviesMessage{
     float vote_average=6;
 }
 
+message CastMovieMessage{
+    int32 id=1;
+    string name=2;
+    string profile_path=3;
+    string character=4;
+}
+
+message CrewMovieMessage{
+    int32 id=1;
+    string name=2;
+    string profile_path=3;
+    string job=4;
+}
+
+message VideosMessage{
+    string name=1;
+    string key=2;
+}
+
+
 message GetMovieRequest{
     string movie_id=1;
 }
 
 message GetMovieResponse{
-    MovieMessage popularmovie_message=1;
+    MovieMessage movie_message=1;
 }
 
 message ListPopularMovieRequest{}
@@ -67,6 +118,29 @@ message ListSearchMovieRequest{
 
 message ListSearchMovieResponse{
     repeated SearchMoviesMessage searchmovie_message=1;
+}
+
+message CastMovieRequest{
+    string movie_id=1;
+}
+
+message CastMovieResponse{
+    repeated CastMovieMessage castmovie_message=1;
+}
+message CrewMovieRequest{
+    string movie_id=1;
+}
+
+message CrewMovieResponse{
+    repeated CrewMovieMessage crewmovie_message=1;
+}
+
+message VideoMovieRequest{
+    string movie_id=1;
+}
+
+message VideoMovieResponse{
+    repeated VideosMessage video_message=1;
 }
 
 
