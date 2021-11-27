@@ -14,7 +14,17 @@ service Movie {
     }
     rpc ListPopularMovies(ListPopularMovieRequest) returns (ListPopularMovieResponse){
         option (google.api.http)={
-            get :"/movie/popular"
+            get :"/movies/popular"
+        };
+    }
+    rpc ListPlayingMovies(ListPlayingMovieRequest) returns (ListPlayingMovieResponse){
+        option (google.api.http)={
+            get :"/movies/playing"
+        };
+    }
+    rpc ListUpcomingMovies(ListUpcomingMovieRequest) returns (ListUpcomingMovieResponse){
+        option (google.api.http)={
+            get :"/movies/upcoming"
         };
     }
     rpc SearchMovies(ListSearchMovieRequest) returns (ListSearchMovieResponse){
@@ -62,7 +72,7 @@ message MovieMessage{
     repeated Production production=11;
 }
 
-message PopularMoviesMessage{
+message MovieListsMessage{
     int32 id=1;
     string title=2;
     string poster_path=3;
@@ -109,7 +119,17 @@ message GetMovieResponse{
 message ListPopularMovieRequest{}
 
 message ListPopularMovieResponse{
-    repeated PopularMoviesMessage popularmovie_message=1;
+    repeated MovieListsMessage popularmovie_message=1;
+}
+message ListPlayingMovieRequest{}
+
+message ListPlayingMovieResponse{
+    repeated MovieListsMessage playingmovie_message=1;
+}
+message ListUpcomingMovieRequest{}
+
+message ListUpcomingMovieResponse{
+    repeated MovieListsMessage upcomingmovie_message=1;
 }
 
 message ListSearchMovieRequest{

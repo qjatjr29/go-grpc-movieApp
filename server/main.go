@@ -19,8 +19,8 @@ type movieServer struct {
 	moviepb.MovieServer
 }
 
-// 인기 영화 목록
-type PopularMovies struct {
+// 인기,상영중,개봉할 영화 목록
+type MovieLists struct {
 	Results []struct {
 		ID           int     `json:"id"`
 		Title        string  `json:"title"`
@@ -163,14 +163,14 @@ func (s *movieServer) ListPopularMovies(ctx context.Context, req *moviepb.ListPo
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
 
-	var result PopularMovies
+	var result MovieLists
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	popularMovieMessages := make([]*moviepb.PopularMoviesMessage, len(result.Results))
+	popularMovieMessages := make([]*moviepb.MovieListsMessage, len(result.Results))
 
 	for i, rec := range result.Results {
-		var popularMovie = &moviepb.PopularMoviesMessage{}
+		var popularMovie = &moviepb.MovieListsMessage{}
 		popularMovie.Id = int32(rec.ID)
 		popularMovie.Title = rec.Title
 		popularMovie.PosterPath = rec.Poster_path
@@ -183,6 +183,68 @@ func (s *movieServer) ListPopularMovies(ctx context.Context, req *moviepb.ListPo
 		PopularmovieMessage: popularMovieMessages,
 	}, nil
 }
+// List playing Movies
+func (s *movieServer) ListPlayingMovies(ctx context.Context, req *moviepb.ListPlayingMovieRequest) (*moviepb.ListPlayingMovieResponse, error) {
+
+	resp, err := http.Get("https://api.themoviedb.org/3/movie/now_playing?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&page=1")
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+
+	var result MovieLists
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	playingMovieMessages := make([]*moviepb.MovieListsMessage, len(result.Results))
+
+	for i, rec := range result.Results {
+		var playingMovie = &moviepb.MovieListsMessage{}
+		playingMovie.Id = int32(rec.ID)
+		playingMovie.Title = rec.Title
+		playingMovie.PosterPath = rec.Poster_path
+		playingMovie.ReleaseDate = rec.Release_date
+		playingMovie.Overview = rec.Overview
+		playingMovie.VoteAverage = rec.Vote_average
+		playingMovieMessages[i] = playingMovie
+	}
+	return &moviepb.ListPlayingMovieResponse{
+		PlayingmovieMessage: playingMovieMessages,
+	}, nil
+}
+// List upcoming Movies
+func (s *movieServer) ListUpcomingMovies(ctx context.Context, req *moviepb.ListUpcomingMovieRequest) (*moviepb.ListUpcomingMovieResponse, error) {
+
+	resp, err := http.Get("https://api.themoviedb.org/3/movie/upcoming?api_key=b71e7ddc0337840f4f46be79b18e4c41&language=en-US&page=1")
+	if err != nil {
+		fmt.Println("No response from request")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) // response body is []byte
+
+	var result MovieLists
+	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+		fmt.Println("Can not unmarshal JSON")
+	}
+	upcomingMovieMessages := make([]*moviepb.MovieListsMessage, len(result.Results))
+
+	for i, rec := range result.Results {
+		var upcomingMovie = &moviepb.MovieListsMessage{}
+		upcomingMovie.Id = int32(rec.ID)
+		upcomingMovie.Title = rec.Title
+		upcomingMovie.PosterPath = rec.Poster_path
+		upcomingMovie.ReleaseDate = rec.Release_date
+		upcomingMovie.Overview = rec.Overview
+		upcomingMovie.VoteAverage = rec.Vote_average
+		upcomingMovieMessages[i] = upcomingMovie
+	}
+	return &moviepb.ListUpcomingMovieResponse{
+		UpcomingmovieMessage: upcomingMovieMessages,
+	}, nil
+}
+
+
 
 // List Search Result Movies
 func (s *movieServer) SearchMovies(ctx context.Context, req *moviepb.ListSearchMovieRequest) (*moviepb.ListSearchMovieResponse, error) {

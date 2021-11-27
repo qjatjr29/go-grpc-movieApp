@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type MovieClient interface {
 	GetMovie(ctx context.Context, in *GetMovieRequest, opts ...grpc.CallOption) (*GetMovieResponse, error)
 	ListPopularMovies(ctx context.Context, in *ListPopularMovieRequest, opts ...grpc.CallOption) (*ListPopularMovieResponse, error)
+	ListPlayingMovies(ctx context.Context, in *ListPlayingMovieRequest, opts ...grpc.CallOption) (*ListPlayingMovieResponse, error)
+	ListUpcomingMovies(ctx context.Context, in *ListUpcomingMovieRequest, opts ...grpc.CallOption) (*ListUpcomingMovieResponse, error)
 	SearchMovies(ctx context.Context, in *ListSearchMovieRequest, opts ...grpc.CallOption) (*ListSearchMovieResponse, error)
 	CastMovies(ctx context.Context, in *CastMovieRequest, opts ...grpc.CallOption) (*CastMovieResponse, error)
 	CrewMovies(ctx context.Context, in *CrewMovieRequest, opts ...grpc.CallOption) (*CrewMovieResponse, error)
@@ -46,6 +48,24 @@ func (c *movieClient) GetMovie(ctx context.Context, in *GetMovieRequest, opts ..
 func (c *movieClient) ListPopularMovies(ctx context.Context, in *ListPopularMovieRequest, opts ...grpc.CallOption) (*ListPopularMovieResponse, error) {
 	out := new(ListPopularMovieResponse)
 	err := c.cc.Invoke(ctx, "/movie.Movie/ListPopularMovies", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieClient) ListPlayingMovies(ctx context.Context, in *ListPlayingMovieRequest, opts ...grpc.CallOption) (*ListPlayingMovieResponse, error) {
+	out := new(ListPlayingMovieResponse)
+	err := c.cc.Invoke(ctx, "/movie.Movie/ListPlayingMovies", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *movieClient) ListUpcomingMovies(ctx context.Context, in *ListUpcomingMovieRequest, opts ...grpc.CallOption) (*ListUpcomingMovieResponse, error) {
+	out := new(ListUpcomingMovieResponse)
+	err := c.cc.Invoke(ctx, "/movie.Movie/ListUpcomingMovies", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +114,8 @@ func (c *movieClient) VideoMovies(ctx context.Context, in *VideoMovieRequest, op
 type MovieServer interface {
 	GetMovie(context.Context, *GetMovieRequest) (*GetMovieResponse, error)
 	ListPopularMovies(context.Context, *ListPopularMovieRequest) (*ListPopularMovieResponse, error)
+	ListPlayingMovies(context.Context, *ListPlayingMovieRequest) (*ListPlayingMovieResponse, error)
+	ListUpcomingMovies(context.Context, *ListUpcomingMovieRequest) (*ListUpcomingMovieResponse, error)
 	SearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error)
 	CastMovies(context.Context, *CastMovieRequest) (*CastMovieResponse, error)
 	CrewMovies(context.Context, *CrewMovieRequest) (*CrewMovieResponse, error)
@@ -110,6 +132,12 @@ func (UnimplementedMovieServer) GetMovie(context.Context, *GetMovieRequest) (*Ge
 }
 func (UnimplementedMovieServer) ListPopularMovies(context.Context, *ListPopularMovieRequest) (*ListPopularMovieResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPopularMovies not implemented")
+}
+func (UnimplementedMovieServer) ListPlayingMovies(context.Context, *ListPlayingMovieRequest) (*ListPlayingMovieResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPlayingMovies not implemented")
+}
+func (UnimplementedMovieServer) ListUpcomingMovies(context.Context, *ListUpcomingMovieRequest) (*ListUpcomingMovieResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUpcomingMovies not implemented")
 }
 func (UnimplementedMovieServer) SearchMovies(context.Context, *ListSearchMovieRequest) (*ListSearchMovieResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchMovies not implemented")
@@ -168,6 +196,42 @@ func _Movie_ListPopularMovies_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MovieServer).ListPopularMovies(ctx, req.(*ListPopularMovieRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Movie_ListPlayingMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPlayingMovieRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServer).ListPlayingMovies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.Movie/ListPlayingMovies",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServer).ListPlayingMovies(ctx, req.(*ListPlayingMovieRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Movie_ListUpcomingMovies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUpcomingMovieRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MovieServer).ListUpcomingMovies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/movie.Movie/ListUpcomingMovies",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MovieServer).ListUpcomingMovies(ctx, req.(*ListUpcomingMovieRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -258,6 +322,14 @@ var Movie_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPopularMovies",
 			Handler:    _Movie_ListPopularMovies_Handler,
+		},
+		{
+			MethodName: "ListPlayingMovies",
+			Handler:    _Movie_ListPlayingMovies_Handler,
+		},
+		{
+			MethodName: "ListUpcomingMovies",
+			Handler:    _Movie_ListUpcomingMovies_Handler,
 		},
 		{
 			MethodName: "SearchMovies",
