@@ -7,47 +7,56 @@ option go_package="github.com/qjatjr29/go-grpc-movieapp/proto/movie";
 import "google/api/annotations.proto";
 
 service Movie {
+    // 영화 detail한 정보를 얻어와 띄워 주는 rpc
     rpc GetMovie(GetMovieRequest) returns (GetMovieResponse){
         option (google.api.http)={
             get: "/movie/{movie_id}"
         };
     }
+    // 현재 인기 있는 영화들의 리스트 
     rpc ListPopularMovies(ListPopularMovieRequest) returns (ListPopularMovieResponse){
         option (google.api.http)={
             get :"/movies/popular"
         };
     }
+    // 현재 상영중인 영화들의 리스트
     rpc ListPlayingMovies(ListPlayingMovieRequest) returns (ListPlayingMovieResponse){
         option (google.api.http)={
             get :"/movies/playing"
         };
     }
+    // 곧 개봉할 영화들의 리스트
     rpc ListUpcomingMovies(ListUpcomingMovieRequest) returns (ListUpcomingMovieResponse){
         option (google.api.http)={
             get :"/movies/upcoming"
         };
     }
+    // 검색한 영화들의 리스트 
     rpc SearchMovies(ListSearchMovieRequest) returns (ListSearchMovieResponse){
         option (google.api.http)={
             get :"/movie/search/{search_movie_id}"
         };
     }
+    // 영화에 참여한 배우들 
     rpc CastMovies(CastMovieRequest) returns (CastMovieResponse){
         option (google.api.http)={
             get :"/movie/cast/{movie_id}"
         };
     }
+    // 영화에 참여한 스태프들
     rpc CrewMovies(CrewMovieRequest) returns (CrewMovieResponse){
         option (google.api.http)={
             get :"/movie/crew/{movie_id}"
         };
     }
+    // 특정 영화 관련 영상 
     rpc VideoMovies(VideoMovieRequest) returns (VideoMovieResponse){
         option (google.api.http)={
             get :"/movie/video/{movie_id}"
         };
     }
 }
+
 message Genres{
     int32 id=1;
     string name=2;
